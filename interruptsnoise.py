@@ -5,7 +5,7 @@ import numpy as np
 import sounddevice as sd
 
 # valores para calibracion
-amplitude = 0.2
+amplitude = 0.2 # volumen
 divider = 25 # divide la cantidad de interrupciones por segundo
 substractor = 1000 # sustrae un piso a la cantidad de interrupciones por segundo
 
@@ -48,18 +48,17 @@ def intpersec():
 
 def callback(outdata, frames, time, status):
     j = (next(intpersec())-substractor)/divider # interrupciones calibradas
-    t = np.zeros(frames)
+    t = np.zeros(frames,dtype=np.uint8)
+    t = t.reshape(-1, 1)
     tiempo=frames/samplerate # tiempo de audio que voy a generar
     j = int(j * tiempo) # interrupciones durante ese tiempo de audio
-    t = t.reshape(-1, 1)
-
     if j <= 0 or int(frames/j) == 0:
         # solo silencio
         outdata[:] = amplitude * t
         return
 
     for i in range(0,len(t),int(frames/j)):
-        t[i]=1
+        t[i]=255
     outdata[:] = amplitude * t
 
 with sd.OutputStream(device=device, channels=1, callback=callback,
