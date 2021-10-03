@@ -4,56 +4,57 @@ import time
 import numpy as np
 import sounddevice as sd
 
+# valores para calibracion
 amplitude = 0.2
-frequency = 440
-device = sd.default.device[1]
+divider = 25 # divide la cantidad de interrupciones por segundo
+substractor = 1000 # sustrae un piso a la cantidad de interrupciones por segundo
 
-start_idx = 0
+device = sd.default.device[1] # salida default
 
 samplerate = sd.query_devices(device, 'output')['default_samplerate']
 
-log = []
-piso = 0
-
-def inst_interrupts():
-    interrupts = 0
-
+def accumulated_interrupts():
+    """
+    Parser de /proc/interrupts para ver las interrupciones acumuladas
+    """
+    result = 0 
     with open("/proc/interrupts","r") as f:
-        cpus = len(next(f).split())
+        cpus = len(next(f).split()) # cantidad de cpus
         for line in f:
             line = line.split()
             if len(line) > cpus:
                 try:
-                    interrupts += sum([int(i) for i in line[1:-3]])
+                    result += sum([int(i) for i in line[1:-3]])
                 except:
-                    continue
+                    # linea para descartar
+                    continue 
+    return result
 
-    return interrupts
-
-def intpsec():
-    interrupts = inst_interrupts()
-    last = time.time()
+def intpersec():
+    """
+    interrupciones por segundo, como es un generador hay que usarlo asi:
+    next(intpersec())
+    """
+    last_interrupts = accumulated_interrupts()
+    last_time = time.time()
     while True:
-        result = inst_interrupts()
-        current = time.time()
-        amount = result-interrupts
-        period = current-last
-        interruptspersecond=amount/period
-        interrupts = result
-        last = current
-        log.append(interruptspersecond)
-        yield int(interruptspersecond)
+        current_interrupts = accumulated_interrupts() # medicion actual
+        current_time = time.time()
+        amount = current_interrupts-last_interrupts
+        period = current_time-last_time
+        last_interrupts = current_interrupts
+        last_time = current_time
+        yield amount//period
 
 def callback(outdata, frames, time, status):
-    j = next(intpsec())/10
-    j -= piso
-    #j=1
+    j = (next(intpersec())-substractor)/divider # interrupciones calibradas
     t = np.zeros(frames)
-    tiempo=frames/samplerate
-    j = int(j * tiempo)
+    tiempo=frames/samplerate # tiempo de audio que voy a generar
+    j = int(j * tiempo) # interrupciones durante ese tiempo de audio
     t = t.reshape(-1, 1)
 
     if j <= 0 or int(frames/j) == 0:
+        # solo silencio
         outdata[:] = amplitude * t
         return
 
@@ -64,9 +65,7 @@ def callback(outdata, frames, time, status):
 with sd.OutputStream(device=device, channels=1, callback=callback,
                      samplerate=samplerate):
     print('#' * 80)
-    print('press Return to quit')
+    print('Para calibrar usar las variables divider y substractor del codigo')
+    print('Presionar Enter para salir')
     print('#' * 80)
-    while True:
-        input()
-        piso = int(sum(log)/len(log))
-        print("promedio %s" % piso)
+    input()
