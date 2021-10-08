@@ -11,7 +11,7 @@ substractor = 1000  # sustrae un piso a la cantidad de interrupciones por segund
 
 device = sd.default.device[1]  # salida default
 
-samplerate = sd.query_devices(device, 'output')['default_samplerate']
+samplerate = sd.query_devices(device, 'output')['default_samplerate'] / 10
 
 
 def accumulated_interrupts():
@@ -25,7 +25,7 @@ def accumulated_interrupts():
             line = line.split()
             if len(line) > cpus:
                 try:
-                    result += sum([int(i) for i in line[1:-3]])
+                    result += sum([int(i) for i in line[1:cpus+1]])
                 except:
                     # linea para descartar
                     continue
@@ -35,7 +35,8 @@ def accumulated_interrupts():
 def intpersec():
     """
     interrupciones por segundo, como es un generador hay que usarlo asi:
-    next(intpersec())
+    it = intpersec()    # Incializo el generador 
+    next(it)            # Obtengo el valor siguiente
     """
     last_interrupts = accumulated_interrupts()
     last_time = time.time()
@@ -50,7 +51,7 @@ def intpersec():
 
 
 def callback(outdata, frames, time, status):
-    j = (next(intpersec())-substractor)/divider  # interrupciones calibradas
+    j = (next(it)-substractor)/divider  # interrupciones calibradas
     t = np.zeros(frames, dtype=np.uint8)
     t = t.reshape(-1, 1)
     tiempo = frames/samplerate  # tiempo de audio que voy a generar
@@ -64,6 +65,8 @@ def callback(outdata, frames, time, status):
         t[i] = 255
     outdata[:] = amplitude * t
 
+
+it = intpersec()
 
 with sd.OutputStream(device=device, channels=1, callback=callback,
                      samplerate=samplerate):
