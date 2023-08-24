@@ -5,11 +5,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
+# Tipos de interrupciones y colores correspondientes
 interr_types = [
-    'LOC',      # Local timer interrupts
-    'RES',      # Rescheduling interrupts
-    'CAL',      # Function call interrupts
-    'TLB'       # TLB shootdowns
+    'LOC',      # Interrupciones locales del temporizador
+    'RES',      # Interrupciones de reprogramación
+    'CAL',      # Interrupciones de llamadas de función
+    'TLB'       # Invalidaciones de TLB
 ]
 
 colors = [
@@ -28,7 +29,7 @@ def accumulated_interrupts():
     """
     result = {}
     with open("/proc/interrupts", "r") as f:
-        cpus = len(next(f).split())  # cantidad de cpus
+        cpus = len(next(f).split())  # Cantidad de CPUs
         for line in f:
             line = line.split()
             interrupt_t = line[0].strip(":")
@@ -37,21 +38,20 @@ def accumulated_interrupts():
                     result[interrupt_t] = sum(
                             [float(i) for i in line[1:cpus+1]])
                 except:
-                    # linea para descartar
+                    # Línea para descartar
                     continue
     return result
 
-
 def intpersec():
     """
-    interrupciones por segundo, como es un generador hay que usarlo asi:
-    it = intspersec()   # para inicializar
-    next(it)            # para obtener el siguiente valor
+    Interrupciones por segundo, como es un generador hay que usarlo así:
+    it = intspersec()   # Para inicializar
+    next(it)            # Para obtener el siguiente valor
     """
     last_interrupts = accumulated_interrupts()
     last_time = time.time()
     while True:
-        current_interrupts = accumulated_interrupts()  # medicion actual
+        current_interrupts = accumulated_interrupts()  # Medición actual
         current_time = time.time()
         period = current_time - last_time
         last_time = current_time
@@ -66,7 +66,6 @@ def init_plot():
         line.set_data([], [])
     return lines
 
-
 def animate(i):
     interrupts = next(it)
     for j, line in enumerate(lines):
@@ -76,7 +75,6 @@ def animate(i):
         y.append(interrupts[interr_types[j]])
         line.set_data(range(len(y)), y)
     return lines
-
 
 it = intpersec()
 
