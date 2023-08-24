@@ -1,3 +1,5 @@
-sounddevice==0.4.2
-matplotlib==3.2.1
-numpy==1.17.4
+sounddevice
+matplotlib
+numpy
+pyaudio
+
