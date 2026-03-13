@@ -5,7 +5,8 @@
 
 Sonify and visualize Linux kernel interrupts by reading `/proc/interrupts`: listen to the system like a stethoscope or plot its activity in real time.
 
-This project is used in the **Operating Systems** course (Sistemas Operativos) at **FaMAF–UNC** (Facultad de Matemática, Astronomía, Física y Computación, Universidad Nacional de Córdoba). It is based on ideas by [Nicolás Wolovick](https://github.com/nwolovick): each interrupt drives the speaker in 1-bit PCM fashion (ZX-Spectrum style). If there are about 100 interrupts per second, you hear something like a 100 Hz tone.
+- **Course:** Used in the **Operating Systems** course (Sistemas Operativos) at **FaMAF–UNC** (Facultad de Matemática, Astronomía, Física y Computación, Universidad Nacional de Córdoba).
+- **Credits:** Based on ideas by [Nicolás Wolovick](https://github.com/nwolovick): each interrupt drives the speaker in 1-bit PCM fashion (ZX-Spectrum style). If there are about 100 interrupts per second, you hear something like a 100 Hz tone.
 
 **Linux only** — the program reads `/proc/interrupts`. On other systems it exits with a clear message.
 
