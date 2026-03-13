@@ -1,4 +1,4 @@
-# Reproducibilidad: versiones mínimas probadas
+# Minimum versions for reproducibility
 numpy>=1.20
 sounddevice>=0.4.0
 matplotlib>=3.5

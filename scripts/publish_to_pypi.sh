@@ -1,22 +1,22 @@
 #!/usr/bin/env bash
-# Publica el paquete en PyPI.
-# Requiere: pip install build twine
-# Configuración: ~/.pypirc o TWINE_USERNAME / TWINE_PASSWORD (token PyPI)
+# Publish the package to PyPI.
+# Requires: pip install build twine
+# Config: ~/.pypirc or TWINE_USERNAME / TWINE_PASSWORD (PyPI token)
 
 set -e
 cd "$(dirname "$0")/.."
 ROOT="$(pwd)"
 
-echo "Directorio del proyecto: $ROOT"
-echo "Versión en pyproject.toml: $(grep '^version' pyproject.toml | cut -d'"' -f2)"
+echo "Project directory: $ROOT"
+echo "Version in pyproject.toml: $(grep '^version' pyproject.toml | cut -d'"' -f2)"
 echo ""
 
 if ! python3 -c "import build" 2>/dev/null; then
-    echo "Instala build: pip install build"
+    echo "Install build: pip install build"
     exit 1
 fi
 if ! python3 -c "import twine" 2>/dev/null; then
-    echo "Instala twine: pip install twine"
+    echo "Install twine: pip install twine"
     exit 1
 fi
 
@@ -25,4 +25,4 @@ python3 -m build
 twine upload dist/*
 
 echo ""
-echo "Publicado. Comprueba: https://pypi.org/project/pysoundofinterrupts/"
+echo "Published. Check: https://pypi.org/project/pysoundofinterrupts/"

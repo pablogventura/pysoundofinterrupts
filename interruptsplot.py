@@ -11,7 +11,7 @@ from interrupts_reader import (
     intpersec_by_type,
 )
 
-# Tipos de interrupciones y colores correspondientes
+# Interrupt types and their plot colors
 INTERR_TYPES = list(DEFAULT_INTERRUPT_TYPES)
 COLORS = ["tab:red", "tab:blue", "tab:green", "tab:orange"]
 
@@ -22,25 +22,25 @@ DEFAULT_INTERVAL_MS = 50
 
 def _parse_args():
     p = argparse.ArgumentParser(
-        description="Gráfico en tiempo real de interrupciones por tipo (Linux, /proc/interrupts)."
+        description="Real-time plot of interrupts by type (Linux, /proc/interrupts)."
     )
     p.add_argument(
         "--x-max",
         type=int,
         default=int(os.environ.get("INTERRUPTS_PLOT_X_MAX", DEFAULT_X_MAX)),
-        help="Máximo de puntos en el eje X. Default: %s" % DEFAULT_X_MAX,
+        help="Max points on X axis. Default: %s" % DEFAULT_X_MAX,
     )
     p.add_argument(
         "--y-max",
         type=int,
         default=int(os.environ.get("INTERRUPTS_PLOT_Y_MAX", DEFAULT_Y_MAX)),
-        help="Límite superior del eje Y. Default: %s" % DEFAULT_Y_MAX,
+        help="Upper limit of Y axis. Default: %s" % DEFAULT_Y_MAX,
     )
     p.add_argument(
         "--interval",
         type=int,
         default=int(os.environ.get("INTERRUPTS_PLOT_INTERVAL", DEFAULT_INTERVAL_MS)),
-        help="Intervalo de actualización en ms. Default: %s" % DEFAULT_INTERVAL_MS,
+        help="Update interval in ms. Default: %s" % DEFAULT_INTERVAL_MS,
     )
     return p.parse_args()
 

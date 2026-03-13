@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pysoundofinterrupts"
-version = "0.1.0"
-description = "Sonifica y visualiza interrupciones del kernel Linux leyendo /proc/interrupts"
+version = "0.1.1"
+description = "Sonify and visualize Linux kernel interrupts by reading /proc/interrupts"
 readme = "README.md"
 requires-python = ">=3.8"
 license = { text = "MIT" }

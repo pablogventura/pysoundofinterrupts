@@ -1,12 +1,12 @@
 """
-Tests del módulo interrupts_reader usando un archivo mock de /proc/interrupts.
+Tests for the interrupts_reader module using a mock /proc/interrupts file.
 """
 import tempfile
 from pathlib import Path
 import pytest
 from unittest.mock import patch
 
-# Importar desde la raíz del proyecto
+# Import from project root
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from interrupts_reader import (
@@ -18,7 +18,7 @@ from interrupts_reader import (
 )
 
 
-# Contenido típico de /proc/interrupts (2 CPUs)
+# Typical /proc/interrupts content (3 CPUs)
 MOCK_PROC_INTERRUPTS = """            CPU0       CPU1       CPU2
   0:         10          0          0  IRQ
   1:        100          5          0
@@ -69,7 +69,7 @@ def test_intpersec_total_yields_integers(mock_proc_file):
 
 
 def test_intpersec_total_no_zerodiv(mock_proc_file):
-    """Comprobar que period 0 no causa ZeroDivisionError."""
+    """Ensure period 0 does not cause ZeroDivisionError."""
     gen = intpersec_total(interrupts_path=mock_proc_file, min_period=1.0)
     with patch("interrupts_reader.time.time", side_effect=[0.0, 0.0]):
         v = next(gen)

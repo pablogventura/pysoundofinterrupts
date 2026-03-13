@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Lectura de /proc/interrupts (solo Linux).
+Read /proc/interrupts (Linux only).
 
-Formato esperado: primera línea con nombres de CPUs (columnas),
-resto líneas "IRQ: n1 n2 n3 ..." con contadores por CPU.
-Proporciona interrupciones acumuladas y generador de interrupciones por segundo.
+Expected format: first line with CPU names (columns),
+remaining lines "IRQ: n1 n2 n3 ..." with per-CPU counters.
+Provides accumulated interrupts and interrupts-per-second generators.
 """
 import sys
 import time
@@ -12,27 +12,27 @@ from pathlib import Path
 
 PROC_INTERRUPTS = Path("/proc/interrupts")
 
-# Tipos de interrupción usados en el plot
+# Interrupt types used in the plot
 DEFAULT_INTERRUPT_TYPES = ("LOC", "RES", "CAL", "TLB")
 
 
 def _check_linux():
-    """Comprueba que estamos en Linux; si no, termina con mensaje claro."""
+    """Check we are on Linux; if not, exit with a clear message."""
     if sys.platform != "linux":
         sys.exit(
-            f"Este programa solo funciona en Linux (lee /proc/interrupts). "
-            f"Plataforma actual: {sys.platform}"
+            f"This program only runs on Linux (it reads /proc/interrupts). "
+            f"Current platform: {sys.platform}"
         )
     if not PROC_INTERRUPTS.exists():
         sys.exit(
-            f"No se encuentra {PROC_INTERRUPTS}. ¿Estás en Linux?"
+            f"Not found: {PROC_INTERRUPTS}. Are you on Linux?"
         )
 
 
 def accumulated_interrupts_total(interrupts_path=PROC_INTERRUPTS):
     """
-    Parsea /proc/interrupts y devuelve el total de interrupciones acumuladas
-    (suma de todas las columnas de CPU para todas las filas numéricas).
+    Parse /proc/interrupts and return total accumulated interrupts
+    (sum of all CPU columns for all numeric rows).
     """
     result = 0
     with open(interrupts_path, "r") as f:
@@ -53,8 +53,8 @@ def accumulated_interrupts_by_type(
     interrupts_path=PROC_INTERRUPTS,
 ):
     """
-    Parsea /proc/interrupts y devuelve un dict con las interrupciones acumuladas
-    por tipo (claves: LOC, RES, CAL, TLB u las pasadas en interrupt_types).
+    Parse /proc/interrupts and return a dict of accumulated interrupts
+    by type (keys: LOC, RES, CAL, TLB or those passed in interrupt_types).
     """
     if interrupt_types is None:
         interrupt_types = DEFAULT_INTERRUPT_TYPES
@@ -79,8 +79,8 @@ def accumulated_interrupts_by_type(
 
 def intpersec_total(interrupts_path=PROC_INTERRUPTS, min_period=1e-6):
     """
-    Generador infinito: yield de interrupciones por segundo (total).
-    Si el periodo entre lecturas es 0 o muy pequeño, reutiliza el último valor.
+    Infinite generator: yields interrupts per second (total).
+    If the period between reads is 0 or very small, reuses the last value.
     """
     last_total = accumulated_interrupts_total(interrupts_path)
     last_time = time.time()
@@ -102,8 +102,8 @@ def intpersec_by_type(
     min_period=1e-6,
 ):
     """
-    Generador infinito: yield de dict con interrupciones por segundo por tipo
-    (LOC, RES, CAL, TLB). Si el periodo es 0 o muy pequeño, reutiliza el último.
+    Infinite generator: yields dict of interrupts per second by type
+    (LOC, RES, CAL, TLB). If period is 0 or very small, reuses the last.
     """
     if interrupt_types is None:
         interrupt_types = DEFAULT_INTERRUPT_TYPES
