@@ -1,10 +1,15 @@
 # pysoundofinterrupts
 
+[![PyPI version](https://badge.fury.io/py/pysoundofinterrupts.svg)](https://pypi.org/project/pysoundofinterrupts/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Sonifica y visualiza las interrupciones del kernel Linux leyendo `/proc/interrupts`: escucha el sistema como un estetoscopio o dibuja su actividad en tiempo real.
 
 Basado en la idea de [Nicolás Wolovick](https://github.com/nwolovick): cada interrupción impulsa el altavoz en modo 1-bit PCM (estilo ZX-Spectrum). Si hay unas 100 interrupciones por segundo, oirás algo parecido a un tono de 100 Hz.
 
 **Solo Linux** — el programa lee `/proc/interrupts`. En otros sistemas termina con un mensaje claro.
+
+**Enlaces:** [PyPI](https://pypi.org/project/pysoundofinterrupts/) · [Repositorio](https://github.com/pablogventura/pysoundofinterrupts)
 
 ---
 
@@ -84,7 +89,7 @@ Muestra interrupciones por tipo (LOC, RES, CAL, TLB). Opciones:
 Clonar el repo, crear un entorno y instalar en modo editable con extras de test:
 
 ```bash
-git clone https://github.com/TU_USUARIO/pysoundofinterrupts.git
+git clone https://github.com/pablogventura/pysoundofinterrupts.git
 cd pysoundofinterrupts
 python3 -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
@@ -112,3 +117,9 @@ La primera vez configura las credenciales de PyPI (token en `~/.pypirc` o variab
 - **Sin audio:** Comprueba el dispositivo de salida por defecto. El programa usa el dispositivo por defecto del sistema o el primer dispositivo de salida disponible.
 - **Solo en Linux:** En Windows o macOS el programa termina indicando que necesita Linux.
 - **Permisos:** Leer `/proc/interrupts` no suele requerir root. Si falla, comprueba que exista: `ls /proc/interrupts`.
+
+---
+
+## Licencia
+
+MIT. Ver [LICENSE](LICENSE) en el repositorio.
