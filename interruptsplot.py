@@ -1,92 +1,98 @@
 #!/usr/bin/env python3
-import sys
-import time
+import argparse
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
+from interrupts_reader import (
+    _check_linux,
+    DEFAULT_INTERRUPT_TYPES,
+    intpersec_by_type,
+)
+
 # Tipos de interrupciones y colores correspondientes
-interr_types = [
-    'LOC',      # Interrupciones locales del temporizador
-    'RES',      # Interrupciones de reprogramación
-    'CAL',      # Interrupciones de llamadas de función
-    'TLB'       # Invalidaciones de TLB
-]
+INTERR_TYPES = list(DEFAULT_INTERRUPT_TYPES)
+COLORS = ["tab:red", "tab:blue", "tab:green", "tab:orange"]
 
-colors = [
-    'tab:red',
-    'tab:blue',
-    'tab:green',
-    'tab:orange'
-]
+DEFAULT_X_MAX = 100
+DEFAULT_Y_MAX = 5000
+DEFAULT_INTERVAL_MS = 50
 
-x_max = 100
-y_max = 5000
 
-def accumulated_interrupts():
-    """
-    Parser de /proc/interrupts para ver las interrupciones acumuladas
-    """
-    result = {}
-    with open("/proc/interrupts", "r") as f:
-        cpus = len(next(f).split())  # Cantidad de CPUs
-        for line in f:
-            line = line.split()
-            interrupt_t = line[0].strip(":")
-            if interrupt_t in interr_types:
-                try:
-                    result[interrupt_t] = sum(
-                            [float(i) for i in line[1:cpus+1]])
-                except:
-                    # Línea para descartar
-                    continue
-    return result
+def _parse_args():
+    p = argparse.ArgumentParser(
+        description="Gráfico en tiempo real de interrupciones por tipo (Linux, /proc/interrupts)."
+    )
+    p.add_argument(
+        "--x-max",
+        type=int,
+        default=int(os.environ.get("INTERRUPTS_PLOT_X_MAX", DEFAULT_X_MAX)),
+        help="Máximo de puntos en el eje X. Default: %s" % DEFAULT_X_MAX,
+    )
+    p.add_argument(
+        "--y-max",
+        type=int,
+        default=int(os.environ.get("INTERRUPTS_PLOT_Y_MAX", DEFAULT_Y_MAX)),
+        help="Límite superior del eje Y. Default: %s" % DEFAULT_Y_MAX,
+    )
+    p.add_argument(
+        "--interval",
+        type=int,
+        default=int(os.environ.get("INTERRUPTS_PLOT_INTERVAL", DEFAULT_INTERVAL_MS)),
+        help="Intervalo de actualización en ms. Default: %s" % DEFAULT_INTERVAL_MS,
+    )
+    return p.parse_args()
 
-def intpersec():
-    """
-    Interrupciones por segundo, como es un generador hay que usarlo así:
-    it = intspersec()   # Para inicializar
-    next(it)            # Para obtener el siguiente valor
-    """
-    last_interrupts = accumulated_interrupts()
-    last_time = time.time()
-    while True:
-        current_interrupts = accumulated_interrupts()  # Medición actual
-        current_time = time.time()
-        period = current_time - last_time
-        last_time = current_time
-        result = { k: (current_interrupts[k] - last_interrupts[k]) / period
-            for k in interr_types
-        }
-        last_interrupts = current_interrupts.copy()
-        yield result
 
-def init_plot():
-    for line in lines:
-        line.set_data([], [])
-    return lines
+def main():
+    _check_linux()
+    args = _parse_args()
+    x_max = args.x_max
+    y_max = args.y_max
+    interval_ms = args.interval
 
-def animate(i):
-    interrupts = next(it)
-    for j, line in enumerate(lines):
-        y = list(line.get_ydata())
-        if len(y) >= x_max:
-            y.pop(0)
-        y.append(interrupts[interr_types[j]])
-        line.set_data(range(len(y)), y)
-    return lines
+    it = intpersec_by_type(interrupt_types=INTERR_TYPES)
 
-it = intpersec()
+    def init_plot():
+        for line in lines:
+            line.set_data([], [])
+        return lines
 
-fig = plt.figure()
-ax = plt.axes(xlim=(0, x_max), ylim=(0, y_max))
-lines = []
-for j in range(len(interr_types)):
-    line = ax.plot([], [],
-            ls='-', marker='.', color=colors[j], label=interr_types[j])[0]
-    lines.append(line)
+    def animate(i):
+        interrupts = next(it)
+        for j, line in enumerate(lines):
+            y = list(line.get_ydata())
+            if len(y) >= x_max:
+                y.pop(0)
+            y.append(interrupts[INTERR_TYPES[j]])
+            line.set_data(range(len(y)), y)
+        return lines
 
-anim = animation.FuncAnimation(fig, animate,
-        frames=None, interval=50, blit=False, init_func=init_plot)
-fig.legend()
-plt.show()
+    fig = plt.figure()
+    ax = plt.axes(xlim=(0, x_max), ylim=(0, y_max))
+    lines = []
+    for j in range(len(INTERR_TYPES)):
+        line = ax.plot(
+            [], [],
+            ls="-",
+            marker=".",
+            color=COLORS[j],
+            label=INTERR_TYPES[j],
+        )[0]
+        lines.append(line)
+
+    anim = animation.FuncAnimation(
+        fig,
+        animate,
+        frames=None,
+        interval=interval_ms,
+        blit=False,
+        init_func=init_plot,
+    )
+    fig.legend()
+    plt.show()
+
+
+if __name__ == "__main__":
+    main()

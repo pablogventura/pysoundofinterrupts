@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pysoundofinterrupts"
+version = "0.1.0"
+description = "Sonifica y visualiza interrupciones del kernel Linux leyendo /proc/interrupts"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+keywords = ["interrupts", "linux", "proc", "sound", "visualization", "kernel"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Hardware",
+]
+dependencies = [
+    "numpy>=1.20",
+    "sounddevice>=0.4.0",
+    "matplotlib>=3.5",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=7.0"]
+dev = ["build", "twine"]
+
+[project.scripts]
+interrupts-sound = "interruptsnoise:main"
+interrupts-plot = "interruptsplot:main"
+
+[tool.setuptools]
+py-modules = ["interrupts_reader", "interruptsnoise", "interruptsplot"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
