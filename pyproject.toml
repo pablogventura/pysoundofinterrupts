@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pysoundofinterrupts"
-version = "0.1.1"
+version = "0.1.2"
 description = "Sonify and visualize Linux kernel interrupts by reading /proc/interrupts"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -35,11 +35,11 @@ test = ["pytest>=7.0"]
 dev = ["build", "twine"]
 
 [project.scripts]
-interrupts-sound = "interruptsnoise:main"
-interrupts-plot = "interruptsplot:main"
+interrupts-sound = "interrupts_sound:main"
+interrupts-plot = "interrupts_plot:main"
 
 [tool.setuptools]
-py-modules = ["interrupts_reader", "interruptsnoise", "interruptsplot"]
+py-modules = ["interrupts_reader", "interrupts_sound", "interrupts_plot"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
