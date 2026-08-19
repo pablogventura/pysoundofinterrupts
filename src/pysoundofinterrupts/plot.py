@@ -19,6 +19,15 @@ DEFAULT_Y_MAX = 5000
 DEFAULT_INTERVAL_MS = 50
 
 
+def append_capped(series, value, x_max):
+    """Keep a sliding window of at most x_max samples for the live plot."""
+    window = list(series)
+    if len(window) >= x_max:
+        window.pop(0)
+    window.append(value)
+    return window
+
+
 def _parse_args():
     p = argparse.ArgumentParser(
         description="Real-time plot of interrupts by type (Linux, /proc/interrupts)."
@@ -59,12 +68,12 @@ def main():
         return lines
 
     def animate(i):
+        # Sliding window: drop the oldest point once the X axis is full.
         interrupts = next(it)
         for j, line in enumerate(lines):
-            y = list(line.get_ydata())
-            if len(y) >= x_max:
-                y.pop(0)
-            y.append(interrupts[INTERR_TYPES[j]])
+            y = append_capped(
+                line.get_ydata(), interrupts[INTERR_TYPES[j]], x_max
+            )
             line.set_data(range(len(y)), y)
         return lines
 
@@ -89,6 +98,7 @@ def main():
         blit=False,
         init_func=init_plot,
     )
+    fig._anim = anim
     fig.legend()
     plt.show()
 

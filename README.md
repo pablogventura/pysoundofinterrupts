@@ -5,10 +5,10 @@
 
 Sonify and visualize Linux kernel interrupts by reading `/proc/interrupts`: listen to the system like a stethoscope or plot its activity in real time.
 
-- **Course:** Used in the **Operating Systems** course (Sistemas Operativos) at **FaMAF–UNC** (Facultad de Matemática, Astronomía, Física y Computación, Universidad Nacional de Córdoba).
+- **Course:** Used in the **Operating Systems** course (Sistemas Operativos) at **FaMAF-UNC** (Facultad de Matemática, Astronomía, Física y Computación, Universidad Nacional de Córdoba).
 - **Credits:** Based on ideas by [Nicolás Wolovick](https://github.com/nwolovick): each interrupt drives the speaker in 1-bit PCM fashion (ZX-Spectrum style). If there are about 100 interrupts per second, you hear something like a 100 Hz tone.
 
-**Linux only** — the program reads `/proc/interrupts`. On other systems it exits with a clear message.
+**Linux only** - the program reads `/proc/interrupts`. On other systems it exits with a clear message.
 
 **Links:** [PyPI](https://pypi.org/project/pysoundofinterrupts/) · [Repository](https://github.com/pablogventura/pysoundofinterrupts)
 
@@ -16,22 +16,32 @@ Sonify and visualize Linux kernel interrupts by reading `/proc/interrupts`: list
 
 ## Installation
 
+Requirements: **Python 3.10+**, Linux.
+
 ### With pipx (recommended)
 
-Install and run in an isolated environment without touching your global Python:
+Install and run in an isolated environment without touching your global Python.
+
+PyPI (last published release):
 
 ```bash
 pipx install pysoundofinterrupts
 ```
 
-This makes the `interrupts-sound` (audio) and `interrupts-plot` (graph) commands available.
-
-From this repository (clone or GitHub):
+This repository is **0.2.0** (src package layout). Until that version is on PyPI, install from a clone or GitHub:
 
 ```bash
 pipx install .
 # or: pipx install git+https://github.com/pablogventura/pysoundofinterrupts.git
 ```
+
+For development against this tree (changes apply without reinstall):
+
+```bash
+pipx install -e .
+```
+
+This makes the `interrupts-sound` (audio) and `interrupts-plot` (graph) commands available.
 
 ### With pip
 
@@ -39,7 +49,7 @@ pipx install .
 pip install pysoundofinterrupts
 ```
 
-Requirements: **Python 3.8+**, Linux.
+Same note as pipx: use a clone (`pip install .`) if you need 0.2.0 before it is on PyPI.
 
 ---
 
@@ -62,7 +72,7 @@ Press Enter to exit. To calibrate the level:
 |-----------------|----------------------------|--------------------------------------|
 | `--subtractor`  | `INTERRUPTS_SUBTRACTOR`    | Subtract a floor from rate (default 1000) |
 | `--divider`     | `INTERRUPTS_DIVIDER`       | Divide the rate (default 25)         |
-| `--amplitude`   | `INTERRUPTS_AMPLITUDE`     | Volume 0–1 (default 0.2)            |
+| `--amplitude`   | `INTERRUPTS_AMPLITUDE`     | Volume 0-1 (default 0.2)            |
 
 Example:
 
@@ -88,16 +98,18 @@ Shows interrupts by type (LOC, RES, CAL, TLB). Options:
 
 ## Development and tests
 
-Clone the repo, create an environment, and install in editable mode with test extras:
+Clone the repo, create a virtualenv, and install in editable mode with test extras:
 
 ```bash
 git clone https://github.com/pablogventura/pysoundofinterrupts.git
 cd pysoundofinterrupts
 python3 -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
+source .venv/bin/activate
 pip install -e ".[test]"
 pytest tests/ -v
 ```
+
+The suite uses mock `/proc/interrupts` files and does not open audio devices or a GUI. Unit tests do not require a live `/proc/interrupts`.
 
 ---
 

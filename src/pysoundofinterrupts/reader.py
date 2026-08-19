@@ -57,7 +57,7 @@ def accumulated_interrupts_by_type(
     """
     if interrupt_types is None:
         interrupt_types = DEFAULT_INTERRUPT_TYPES
-    result = {t: 0.0 for t in interrupt_types}
+    result = {t: 0 for t in interrupt_types}
     with open(interrupts_path, "r") as f:
         cpus = len(next(f).split())
         for line in f:
@@ -69,7 +69,7 @@ def accumulated_interrupts_by_type(
                 continue
             try:
                 result[irq_type] = sum(
-                    float(x) for x in parts[1 : cpus + 1]
+                    int(x) for x in parts[1 : cpus + 1]
                 )
             except (ValueError, IndexError):
                 continue
@@ -80,6 +80,7 @@ def intpersec_total(interrupts_path=PROC_INTERRUPTS, min_period=1e-6):
     """
     Infinite generator: yields interrupts per second (total).
     If the period between reads is 0 or very small, reuses the last value.
+    The first yield compares two back-to-back reads of the same file (rate ~0).
     """
     last_total = accumulated_interrupts_total(interrupts_path)
     last_time = time.time()
@@ -103,6 +104,7 @@ def intpersec_by_type(
     """
     Infinite generator: yields dict of interrupts per second by type
     (LOC, RES, CAL, TLB). If period is 0 or very small, reuses the last.
+    The first yield compares two back-to-back reads of the same file (rates ~0).
     """
     if interrupt_types is None:
         interrupt_types = DEFAULT_INTERRUPT_TYPES

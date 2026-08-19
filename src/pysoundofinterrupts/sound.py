@@ -16,6 +16,23 @@ DEFAULT_SUBTRACTOR = 1000
 SAMPLERATE_DIVISOR = 10
 
 
+def pulses_for_rate(frames, samplerate, raw, subtractor, divider, amplitude):
+    """Build a 1-bit PCM buffer: one spike per calibrated interrupt pulse.
+
+    About 100 interrupts/s after calibration sounds like a 100 Hz click train
+    (ZX-Spectrum style). Silence if the calibrated rate is not positive.
+    """
+    buffer = np.zeros((frames, 1), dtype=np.uint8)
+    calibrated = (raw - subtractor) / divider
+    pulse_count = int(calibrated * (frames / samplerate))
+    step = int(frames / pulse_count) if pulse_count > 0 else 0
+    if pulse_count <= 0 or step <= 0:
+        return amplitude * buffer
+    for i in range(0, len(buffer), step):
+        buffer[i] = 255
+    return amplitude * buffer
+
+
 def _get_default_output_device():
     """Return the default output device in a robust way."""
     default = sd.default.device
@@ -73,19 +90,10 @@ def main():
     def callback(outdata, frames, time_info, status):
         if status:
             print(status, flush=True)
-        raw = next(it)
-        j = (raw - subtractor) / divider
-        t = np.zeros(frames, dtype=np.uint8)
-        t = t.reshape(-1, 1)
-        duration = frames / samplerate
-        j = int(j * duration)
-        step = int(frames / j) if j > 0 else 0
-        if j <= 0 or step <= 0:
-            outdata[:] = amplitude * t
-            return
-        for i in range(0, len(t), step):
-            t[i] = 255
-        outdata[:] = amplitude * t
+        # 1-bit PCM: each calibrated interrupt is a click in this buffer.
+        outdata[:] = pulses_for_rate(
+            frames, samplerate, next(it), subtractor, divider, amplitude
+        )
 
     with sd.OutputStream(
         device=device,

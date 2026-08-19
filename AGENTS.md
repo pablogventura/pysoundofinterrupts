@@ -4,7 +4,7 @@ Minimal guide for code agents. User-facing usage lives in `README.md`.
 
 ## Stack
 
-- Python 3.8+, setuptools (`pyproject.toml`), Linux only (`/proc/interrupts`).
+- Python 3.10+, setuptools (`pyproject.toml`), Linux only (`/proc/interrupts`).
 - Runtime: numpy, sounddevice, matplotlib.
 - Tests: pytest (`[test]` extra). Publish: build + twine (`[dev]` extra).
 - Package under `src/pysoundofinterrupts/` (`reader`, `sound`, `plot`).
@@ -17,13 +17,13 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[test]"          # install (editable + tests)
 # pip install -e ".[dev]"         # build + twine
-# pipx install .                  # isolated install; exposes CLIs
+# pipx install -e .               # isolated editable install; exposes CLIs
 ```
 
 ```bash
 interrupts-sound                  # dev: audio (needs Linux + audio device)
 interrupts-plot                   # dev: matplotlib plot
-pytest tests/ -v                  # test
+pytest tests/ -v                  # test (no audio/GUI)
 python3 -m build                  # build sdist/wheel into dist/
 ./scripts/publish_to_pypi.sh      # build + twine upload
 ```
@@ -37,12 +37,18 @@ python3 -m build                  # build sdist/wheel into dist/
 ```
 src/pysoundofinterrupts/
   reader.py            # parse /proc/interrupts; rates
-  sound.py             # CLI audio
-  plot.py              # CLI plot (LOC, RES, CAL, TLB)
-tests/                 # mock /proc file; no live kernel
+  sound.py             # CLI audio; pulses_for_rate
+  plot.py              # CLI plot; append_capped (LOC, RES, CAL, TLB)
+tests/
+  conftest.py          # mock /proc fixtures
+  test_interrupts_reader.py
+  test_cli.py
+  test_sound.py
+  test_plot.py
+  test_entry_points.py
 scripts/publish_to_pypi.sh
-pyproject.toml         # metadata, extras, entry points, pytest
-requirements.txt       # same runtime pins as pyproject
+pyproject.toml
+requirements.txt
 ```
 
 ## Conventions
@@ -50,7 +56,8 @@ requirements.txt       # same runtime pins as pyproject
 - English: code, comments, README, errors.
 - Conventional Commits (`feat`, `fix`, `docs`, `test`, ...).
 - Keep the `src/` layout and setuptools `packages.find` (`where = ["src"]`).
-- Reader API (`pysoundofinterrupts.reader`): `accumulated_interrupts_*`, generators `intpersec_*`; injectable `interrupts_path` for tests.
+- Reader API (`pysoundofinterrupts.reader`): `accumulated_interrupts_*` (int totals), generators `intpersec_*`; injectable `interrupts_path` for tests.
+- Keep `callback` / `animate` short; put pulse and window logic in `pulses_for_rate` and `append_capped`.
 - Entry points: `pysoundofinterrupts.sound:main`, `pysoundofinterrupts.plot:main`.
 - `_check_linux()` exits on non-Linux or missing `/proc/interrupts`.
 - CLI defaults also via env: `INTERRUPTS_SUBTRACTOR`, `INTERRUPTS_DIVIDER`, `INTERRUPTS_AMPLITUDE`, `INTERRUPTS_PLOT_X_MAX`, `INTERRUPTS_PLOT_Y_MAX`, `INTERRUPTS_PLOT_INTERVAL`.
@@ -59,10 +66,10 @@ requirements.txt       # same runtime pins as pyproject
 
 ## Tests
 
-- Location: `tests/test_interrupts_reader.py`.
+- Run all: `pytest tests/ -v`
 - Run one: `pytest tests/test_interrupts_reader.py::test_accumulated_interrupts_total -v`
-- Fixture writes a tempfile mimicking `/proc/interrupts` (3 CPUs). Do not require a real `/proc` for unit tests.
-- `pythonpath = ["src"]` in pytest config; import `pysoundofinterrupts.reader` (no sys.path hacks).
+- Fixtures in `conftest.py` write mock `/proc/interrupts` (3 CPUs). Do not require a real `/proc` or audio/GUI.
+- `pythonpath = ["src"]` in pytest config; import `pysoundofinterrupts.*` (no sys.path hacks).
 
 ## Do not
 
