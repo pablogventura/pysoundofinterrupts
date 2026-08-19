@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 import argparse
 import os
-import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
-from interrupts_reader import (
+from pysoundofinterrupts.reader import (
     _check_linux,
     DEFAULT_INTERRUPT_TYPES,
     intpersec_by_type,

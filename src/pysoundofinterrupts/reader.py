@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Read /proc/interrupts (Linux only).
 

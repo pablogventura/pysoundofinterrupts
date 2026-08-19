@@ -1,15 +1,13 @@
 """
-Tests for the interrupts_reader module using a mock /proc/interrupts file.
+Tests for the reader module using a mock /proc/interrupts file.
 """
 import tempfile
 from pathlib import Path
-import pytest
 from unittest.mock import patch
 
-# Import from project root
-import sys
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from interrupts_reader import (
+import pytest
+
+from pysoundofinterrupts.reader import (
     accumulated_interrupts_total,
     accumulated_interrupts_by_type,
     intpersec_total,
@@ -71,7 +69,7 @@ def test_intpersec_total_yields_integers(mock_proc_file):
 def test_intpersec_total_no_zerodiv(mock_proc_file):
     """Ensure period 0 does not cause ZeroDivisionError."""
     gen = intpersec_total(interrupts_path=mock_proc_file, min_period=1.0)
-    with patch("interrupts_reader.time.time", side_effect=[0.0, 0.0]):
+    with patch("pysoundofinterrupts.reader.time.time", side_effect=[0.0, 0.0]):
         v = next(gen)
     assert v == 0
     assert isinstance(v, int)

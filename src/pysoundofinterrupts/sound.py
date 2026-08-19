@@ -4,7 +4,7 @@ import os
 import numpy as np
 import sounddevice as sd
 
-from interrupts_reader import _check_linux, intpersec_total
+from pysoundofinterrupts.reader import _check_linux, intpersec_total
 
 # Default calibration values (can be overridden via CLI or env)
 DEFAULT_AMPLITUDE = 0.2

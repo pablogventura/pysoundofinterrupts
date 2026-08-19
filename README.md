@@ -26,10 +26,11 @@ pipx install pysoundofinterrupts
 
 This makes the `interrupts-sound` (audio) and `interrupts-plot` (graph) commands available.
 
-To install from source (e.g. for development):
+From this repository (clone or GitHub):
 
 ```bash
 pipx install .
+# or: pipx install git+https://github.com/pablogventura/pysoundofinterrupts.git
 ```
 
 ### With pip
