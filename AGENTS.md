@@ -1,0 +1,73 @@
+# Agent notes
+
+Minimal guide for code agents. User-facing usage lives in `README.md`.
+
+## Stack
+
+- Python 3.8+, setuptools (`pyproject.toml`), Linux only (`/proc/interrupts`).
+- Runtime: numpy, sounddevice, matplotlib.
+- Tests: pytest (`[test]` extra). Publish: build + twine (`[dev]` extra).
+- Three top-level modules (not a package dir): `interrupts_reader`, `interrupts_sound`, `interrupts_plot`.
+- CLIs: `interrupts-sound`, `interrupts-plot`.
+
+## Commands
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[test]"          # install (editable + tests)
+# pip install -e ".[dev]"         # build + twine
+# pipx install .                  # isolated install from source
+```
+
+```bash
+interrupts-sound                  # dev: audio (needs Linux + audio device)
+interrupts-plot                   # dev: matplotlib plot
+pytest tests/ -v                  # test
+python3 -m build                  # build sdist/wheel into dist/
+./scripts/publish_to_pypi.sh      # build + twine upload
+```
+
+- lint: no detectado
+- typecheck: no detectado
+- migrate: no aplica
+
+## Layout
+
+```
+interrupts_reader.py   # parse /proc/interrupts; rates
+interrupts_sound.py    # CLI audio
+interrupts_plot.py     # CLI plot (LOC, RES, CAL, TLB)
+tests/                 # mock /proc file; no live kernel
+scripts/publish_to_pypi.sh
+pyproject.toml         # metadata, extras, entry points, pytest
+requirements.txt       # same runtime pins as pyproject
+```
+
+## Conventions
+
+- English: code, comments, README, errors.
+- Conventional Commits (`feat`, `fix`, `docs`, `test`, ...).
+- Keep modules as `py-modules` in setuptools unless you convert the whole layout.
+- Reader API: `accumulated_interrupts_*`, generators `intpersec_*`; injectable `interrupts_path` for tests.
+- `_check_linux()` exits on non-Linux or missing `/proc/interrupts`.
+- CLI defaults also via env: `INTERRUPTS_SUBTRACTOR`, `INTERRUPTS_DIVIDER`, `INTERRUPTS_AMPLITUDE`, `INTERRUPTS_PLOT_X_MAX`, `INTERRUPTS_PLOT_Y_MAX`, `INTERRUPTS_PLOT_INTERVAL`.
+- Plot types default: `DEFAULT_INTERRUPT_TYPES` (`LOC`, `RES`, `CAL`, `TLB`).
+- Parser: first line = CPU columns; skip non-numeric cells; IRQ name is `parts[0]` without trailing `:`.
+
+## Tests
+
+- Location: `tests/test_interrupts_reader.py`.
+- Run one: `pytest tests/test_interrupts_reader.py::test_accumulated_interrupts_total -v`
+- Fixture writes a tempfile mimicking `/proc/interrupts` (3 CPUs). Do not require a real `/proc` for unit tests.
+- `pythonpath = ["."]` in pytest config; avoid extra sys.path hacks in new tests if possible.
+
+## Do not
+
+- Do not add lint/typecheck/CI configs unless asked; none exist.
+- Do not target Windows/macOS for the CLIs; they must fail clearly via `_check_linux()`.
+- Do not change `/proc/interrupts` parsing without updating the mock fixture and totals (see comments in the test).
+- Do not put secrets in the repo; PyPI uses `~/.pypirc` or `TWINE_*`.
+- Do not rewrite README for agent notes; keep this file short.
+- Do not run `publish_to_pypi.sh` unless explicitly asked (uploads to PyPI).
+- Do not assume Makefile, Docker, or GitHub Actions (none in this repo).
